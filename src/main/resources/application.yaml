@@ -1,0 +1,34 @@
+quarkus:
+  application:
+    name: relay
+
+  http:
+    port: 8080
+
+  log:
+    console:
+      format: "%d{HH:mm:ss} %-5p [%c{2.}] %s%e%n"
+    category:
+      "com.lbg.markets.surveillance.relay":
+        level: INFO
+
+# Sink configuration
+sink:
+  local:
+    path: ${SINK_PATH:/tmp/relay-sink}
+  buffer:
+    size: 8192
+
+# Development profile
+"%dev":
+  quarkus:
+    log:
+      category:
+        "com.lbg.markets.surveillance.relay":
+          level: DEBUG
+
+# Test profile
+"%test":
+  sink:
+    local:
+      path: target/test-sink
