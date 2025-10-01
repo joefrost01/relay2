@@ -14,9 +14,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
 class SimpleTransferTest {
@@ -54,7 +54,7 @@ class SimpleTransferTest {
                 Map.of()
         );
 
-        List<FileDescriptor> files = source.list(feed).collect(Collectors.toList());
+        List<FileDescriptor> files = source.list(feed).toList();
 
         System.out.println("Found " + files.size() + " files:");
         files.forEach(f -> System.out.println("  - " + f.sourcePath()));
@@ -77,13 +77,13 @@ class SimpleTransferTest {
                 Map.of()
         );
 
-        List<FileDescriptor> files = source.list(feed).collect(Collectors.toList());
+        List<FileDescriptor> files = source.list(feed).toList();
 
         System.out.println("Found " + files.size() + " files with *.txt pattern:");
         files.forEach(f -> System.out.println("  - " + f.sourcePath()));
 
         assertEquals(1, files.size(), "Should only find .txt file");
-        assertTrue(files.get(0).sourcePath().endsWith("test.txt"));
+        assertTrue(files.getFirst().sourcePath().endsWith("test.txt"));
     }
 
     private void deleteRecursively(Path path) throws IOException {

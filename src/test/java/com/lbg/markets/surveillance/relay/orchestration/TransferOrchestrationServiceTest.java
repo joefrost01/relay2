@@ -3,6 +3,7 @@ package com.lbg.markets.surveillance.relay.orchestration;
 import com.lbg.markets.surveillance.relay.domain.Feed;
 import com.lbg.markets.surveillance.relay.domain.TransferResult;
 import com.lbg.markets.surveillance.relay.service.TransferOrchestrationService;
+import com.lbg.markets.surveillance.relay.sink.LocalFsSink;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -24,21 +26,35 @@ class TransferOrchestrationServiceTest {
     @Inject
     TransferOrchestrationService orchestrator;
 
+    @Inject
+    LocalFsSink localSink;
+
     private Path sourceDir;
     private Path sinkDir;
+    private Path originalSinkPath;
 
     @BeforeEach
-    void setup() throws IOException {
+    void setup() throws Exception {
         // Create temp directories
         sourceDir = Files.createTempDirectory("test-source-");
         sinkDir = Files.createTempDirectory("test-sink-");
 
-        // Override sink path for test - must be done before sink is created
-        System.setProperty("quarkus.test.arg-line", "-Dsink.local.path=" + sinkDir.toString());
+        // Store original sink path and update it via reflection for testing
+        Field basePathField = LocalFsSink.class.getDeclaredField("basePath");
+        basePathField.setAccessible(true);
+        originalSinkPath = (Path) basePathField.get(localSink);
+        basePathField.set(localSink, sinkDir);
     }
 
     @AfterEach
-    void cleanup() throws IOException {
+    void cleanup() throws Exception {
+        // Restore original sink path
+        if (originalSinkPath != null) {
+            Field basePathField = LocalFsSink.class.getDeclaredField("basePath");
+            basePathField.setAccessible(true);
+            basePathField.set(localSink, originalSinkPath);
+        }
+
         // Clean up temp directories
         if (sourceDir != null && Files.exists(sourceDir)) {
             deleteRecursively(sourceDir);
@@ -73,7 +89,7 @@ class TransferOrchestrationServiceTest {
         Feed feed = new Feed(
                 "test-feed",
                 sourceDir.toString(),
-                List.of("**/*.txt"),
+                List.of("*.txt"),  // Simple pattern for files in root
                 List.of(),
                 "output",
                 true,
@@ -85,13 +101,13 @@ class TransferOrchestrationServiceTest {
 
         // Verify
         assertEquals(1, results.size());
-        TransferResult result = results.get(0);
+        TransferResult result = results.getFirst();
         assertEquals(TransferResult.Status.SUCCESS, result.status());
         assertTrue(result.bytesTransferred() > 0);
 
         // Verify file exists in sink
         Path expectedOutput = sinkDir.resolve("output/test.txt");
-        assertTrue(Files.exists(expectedOutput));
+        assertTrue(Files.exists(expectedOutput), "Output file should exist at: " + expectedOutput);
         assertEquals("Hello, world!", Files.readString(expectedOutput));
     }
 
@@ -104,7 +120,7 @@ class TransferOrchestrationServiceTest {
         Feed feed = new Feed(
                 "test-feed",
                 sourceDir.toString(),
-                List.of("**/*.txt"),
+                List.of("*.txt"),
                 List.of(),
                 "output",
                 true,
@@ -114,12 +130,12 @@ class TransferOrchestrationServiceTest {
         // First transfer
         List<TransferResult> firstRun = orchestrator.executeTransfer(feed);
         assertEquals(1, firstRun.size());
-        assertEquals(TransferResult.Status.SUCCESS, firstRun.get(0).status());
+        assertEquals(TransferResult.Status.SUCCESS, firstRun.getFirst().status());
 
         // Second transfer - should skip
         List<TransferResult> secondRun = orchestrator.executeTransfer(feed);
         assertEquals(1, secondRun.size());
-        assertEquals(TransferResult.Status.SKIPPED, secondRun.get(0).status());
+        assertEquals(TransferResult.Status.SKIPPED, secondRun.getFirst().status());
     }
 
     @Test
@@ -131,7 +147,7 @@ class TransferOrchestrationServiceTest {
         Feed feed = new Feed(
                 "test-feed",
                 sourceDir.toString(),
-                List.of("**/*.csv"),  // Only CSV
+                List.of("*.csv"),  // Only CSV
                 List.of(),
                 "output",
                 true,
@@ -142,7 +158,7 @@ class TransferOrchestrationServiceTest {
 
         // Should only transfer the CSV
         assertEquals(1, results.size());
-        assertTrue(results.get(0).sourcePath().endsWith("included.csv"));
+        assertTrue(results.getFirst().sourcePath().endsWith("included.csv"));
     }
 
     @Test
@@ -166,6 +182,6 @@ class TransferOrchestrationServiceTest {
 
         // Should only transfer good.txt
         assertEquals(1, results.size());
-        assertTrue(results.get(0).sourcePath().endsWith("good.txt"));
+        assertTrue(results.getFirst().sourcePath().endsWith("good.txt"));
     }
 }
