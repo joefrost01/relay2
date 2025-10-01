@@ -2,6 +2,7 @@ package com.lbg.markets.surveillance.relay.orchestration;
 
 import com.lbg.markets.surveillance.relay.domain.Feed;
 import com.lbg.markets.surveillance.relay.domain.TransferResult;
+import com.lbg.markets.surveillance.relay.service.TransferOrchestrationService;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.AfterEach;
@@ -18,10 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
-class TransferOrchestratorTest {
+class TransferOrchestrationServiceTest {
 
     @Inject
-    TransferOrchestrator orchestrator;
+    TransferOrchestrationService orchestrator;
 
     private Path sourceDir;
     private Path sinkDir;

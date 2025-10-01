@@ -2,6 +2,7 @@ package com.lbg.markets.surveillance.relay.tracker;
 
 import com.lbg.markets.surveillance.relay.domain.FileRecord;
 import com.lbg.markets.surveillance.relay.domain.FileRecord.FileStatus;
+import io.quarkus.arc.profile.IfBuildProfile;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Not persistent - state is lost on restart.
  */
 @ApplicationScoped
+@IfBuildProfile(anyOf = {"dev", "test"})
 public class InMemoryTracker implements Tracker {
 
     private final Map<String, FileRecord> filesById = new ConcurrentHashMap<>();

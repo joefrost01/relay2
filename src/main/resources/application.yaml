@@ -12,23 +12,5 @@ quarkus:
       "com.lbg.markets.surveillance.relay":
         level: INFO
 
-# Sink configuration
-sink:
-  local:
-    path: ${SINK_PATH:/tmp/relay-sink}
-  buffer:
-    size: 8192
 
-# Development profile
-"%dev":
-  quarkus:
-    log:
-      category:
-        "com.lbg.markets.surveillance.relay":
-          level: DEBUG
 
-# Test profile
-"%test":
-  sink:
-    local:
-      path: target/test-sink

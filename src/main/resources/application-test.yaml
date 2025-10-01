@@ -1,0 +1,5 @@
+# Test profile
+"%test":
+  sink:
+    local:
+      path: target/test-sink

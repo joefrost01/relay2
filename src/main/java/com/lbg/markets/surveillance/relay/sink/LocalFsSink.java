@@ -1,5 +1,6 @@
 package com.lbg.markets.surveillance.relay.sink;
 
+import io.quarkus.arc.profile.IfBuildProfile;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
@@ -17,6 +18,7 @@ import java.util.Map;
  * Writes files to a configured directory.
  */
 @ApplicationScoped
+@IfBuildProfile(anyOf = {"dev", "test"})
 public class LocalFsSink implements Sink {
 
     private final Path basePath;

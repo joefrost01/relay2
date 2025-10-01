@@ -1,4 +1,4 @@
-package com.lbg.markets.surveillance.relay.orchestration;
+package com.lbg.markets.surveillance.relay.service;
 
 import com.lbg.markets.surveillance.relay.domain.*;
 import com.lbg.markets.surveillance.relay.domain.FileRecord.FileStatus;
@@ -12,7 +12,6 @@ import org.jboss.logging.Logger;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,9 +21,9 @@ import java.util.Map;
  * Handles the main flow: list → filter → dedupe → copy → track.
  */
 @ApplicationScoped
-public class TransferOrchestrator {
+public class TransferOrchestrationService {
 
-    private static final Logger LOG = Logger.getLogger(TransferOrchestrator.class);
+    private static final Logger LOG = Logger.getLogger(TransferOrchestrationService.class);
 
     @Inject
     SourceProvider sourceProvider;

@@ -1,0 +1,17 @@
+# Development profile
+"%dev":
+  quarkus:
+    log:
+      category:
+        "com.lbg.markets.surveillance.relay":
+          level: DEBUG
+
+    http:
+      port: 8080
+
+  # Sink configuration
+  sink:
+    local:
+      path: ${SINK_PATH:/tmp/relay-sink}
+    buffer:
+      size: 8192
